@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"; 
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Login from "./screens/Login";
@@ -8,21 +8,30 @@ import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from "react-nativ
 
 const Stack = createStackNavigator();
 
-const CustomHeader = ({ navigation, title }) => (
-  <View style={styles.headerContainer}>
-    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-      <Text style={styles.backText}>⬅</Text>
-    </TouchableOpacity>
-    <Text style={styles.headerTitle}>{title}</Text>
-  </View>
-);
+// Function to determine text color based on background
+const getTextColor = (bgColor) => {
+  // Dark backgrounds → White text, Light backgrounds → Dark text
+  return ["#C62828", "#6200ea", "#1E88E5"].includes(bgColor) ? "#fff" : "#000";
+};
+
+// Dynamic Header Component
+const CustomHeader = ({ navigation, title, bgColor }) => {
+  const textColor = getTextColor(bgColor);
+  
+  return (
+    <View style={[styles.headerContainer, { backgroundColor: bgColor }]}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <Text style={[styles.backText, { color: textColor }]}>⬅</Text>
+      </TouchableOpacity>
+      <Text style={[styles.headerTitle, { color: textColor }]}>{title}</Text>
+    </View>
+  );
+};
 
 const App = () => {
   return (
     <>
-      {/* StatusBar Adjusted */}
-      <StatusBar backgroundColor="#6200ea" barStyle="light-content" />
-
+      <StatusBar hidden={true} />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={Login} />
@@ -31,7 +40,7 @@ const App = () => {
             component={Register}
             options={({ navigation }) => ({
               headerShown: true,
-              header: () => <CustomHeader navigation={navigation} title="Register" />,
+              header: () => <CustomHeader navigation={navigation} title="Register" bgColor="#1E88E5" />,
             })}
           />
           <Stack.Screen
@@ -39,7 +48,7 @@ const App = () => {
             component={Forget}
             options={({ navigation }) => ({
               headerShown: true,
-              header: () => <CustomHeader navigation={navigation} title="Reset Password" />,
+              header: () => <CustomHeader navigation={navigation} title="Reset" bgColor="#C62828" />,
             })}
           />
         </Stack.Navigator>
@@ -54,19 +63,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 15,
     paddingHorizontal: 15,
-    backgroundColor: "#6200ea",
-    paddingTop: StatusBar.currentHeight, // ✅ Fix for StatusBar Overlap
   },
   backButton: {
     marginRight: 10,
   },
   backText: {
     fontSize: 18,
-    color: "#fff",
   },
   headerTitle: {
     fontSize: 20,
-    color: "#fff",
     fontWeight: "bold",
   },
 });

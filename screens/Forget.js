@@ -13,19 +13,48 @@ import Animated, {
   useSharedValue,
   withTiming,
   withSpring,
+  withRepeat,
+  Easing,
 } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 
-const ForgotScreen = ( {navigation}) => {
+const ForgotScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  // Animation Values
   const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.5);
+  const scale = useSharedValue(0.3);
+  const floating = useSharedValue(-10);
 
+  // On Screen Load
   useEffect(() => {
-    opacity.value = withTiming(1, { duration: 1000 });
-    scale.value = withSpring(1);
+    startAnimation();
   }, []);
+
+  const startAnimation = () => {
+    opacity.value = withTiming(1, { duration: 1200, easing: Easing.ease });
+    scale.value = withSpring(1, { damping: 7, stiffness: 80 });
+
+    floating.value = withRepeat(
+      withTiming(10, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+  };
+
+  const handleReset = () => {
+    setLoading(true);
+    // Hide Form
+    opacity.value = withTiming(0, { duration: 600 });
+    scale.value = withTiming(0.5, { duration: 600 });
+
+    setTimeout(() => {
+      setLoading(false);
+      // Show Form Again
+      startAnimation();
+    }, 2000);
+  };
 
   return (
     <KeyboardAvoidingView
@@ -41,7 +70,16 @@ const ForgotScreen = ( {navigation}) => {
           />
         </Svg>
 
-        <Animated.View style={[styles.formContainer, { opacity, transform: [{ scale }] }]}>
+        {/* Animated Form */}
+        <Animated.View
+          style={[
+            styles.formContainer,
+            {
+              opacity,
+              transform: [{ scale }, { translateY: floating.value }],
+            },
+          ]}
+        >
           <Text style={styles.title}>Forgot Password?</Text>
           <Text style={styles.subtitle}>Enter your email to receive a reset link.</Text>
 
@@ -53,8 +91,10 @@ const ForgotScreen = ( {navigation}) => {
             onChangeText={setEmail}
           />
 
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Send Reset Link</Text>
+          <TouchableOpacity style={styles.button} onPress={handleReset}>
+            <Text style={styles.buttonText}>
+              {loading ? "⏳ Sending..." : "Send Reset Link"}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate("Login")}>

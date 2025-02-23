@@ -13,21 +13,38 @@ import Animated, {
   useSharedValue,
   withTiming,
   withSpring,
+  withSequence,
+  interpolate,
+  useAnimatedStyle,
 } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 
-const RegisterScreen = ({navigation}) => {
+const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.5);
+  const rotation = useSharedValue(0); // Rotation animation
 
   useEffect(() => {
     opacity.value = withTiming(1, { duration: 1000 });
     scale.value = withSpring(1);
+    rotation.value = withSequence(
+      withTiming(360, { duration: 800 }) // Full spin animation
+    );
   }, []);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [
+        { scale: scale.value },
+        { rotate: `${interpolate(rotation.value, [0, 360], [0, 360])}deg` }, // Smooth spin
+      ],
+    };
+  });
 
   return (
     <KeyboardAvoidingView
@@ -43,7 +60,7 @@ const RegisterScreen = ({navigation}) => {
           />
         </Svg>
 
-        <Animated.View style={[styles.formContainer, { opacity, transform: [{ scale }] }]}>
+        <Animated.View style={[styles.formContainer, animatedStyle]}>
           <Text style={styles.title}>Create Account</Text>
 
           <TextInput
